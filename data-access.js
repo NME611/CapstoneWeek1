@@ -122,6 +122,26 @@ async function deleteCustomerById(id) {
   }
 }
 
+async function findCustomersByProperty(propertyName, propertyValue) {
+  try {
+    const col = await connectDB();
+    let filter = {};
+    if (propertyName === "id") {
+      filter[propertyName] = Number(propertyValue); // id should be a number
+    } else {
+      filter[propertyName] = propertyValue;
+    }
+    const customers = await col.find(filter).toArray();
+    if (customers.length === 0) {
+      return [null, "no matching customer documents found"];
+    }
+    return [customers, null];
+  } catch (err) {
+    return [null, err.message];
+  }
+}
+
+
 
 
 
@@ -133,8 +153,10 @@ module.exports = {
   addCustomer,
   getCustomerById,
   updateCustomer,
-  deleteCustomerById
+  deleteCustomerById,
+  findCustomersByProperty
 };
+
 
 
 

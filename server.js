@@ -34,6 +34,40 @@ app.get("/customers", async (req, res) => {
   }
 });
 
+app.get("/customers/find", async (req, res) => {
+  // 2. If no query string, return error
+  if (Object.keys(req.query).length === 0) {
+    res.send("query string is required");
+    return;
+  }
+
+  // 3. Only support single name/value pair
+  const queryKeys = Object.keys(req.query);
+  if (queryKeys.length !== 1) {
+    res.send("only a single name/value query pair is supported");
+    return;
+  }
+
+  const propertyName = queryKeys[0];
+  const propertyValue = req.query[propertyName];
+
+  // 4. Only support id, email, password
+  const allowed = ["id", "email", "password"];
+  if (!allowed.includes(propertyName)) {
+    res.send("name must be one of the following (id, email, password)");
+    return;
+  }
+
+  // 6. Call data-access function
+  const [customers, errMsg] = await da.findCustomersByProperty(propertyName, propertyValue);
+
+  if (customers === null) {
+    res.send(errMsg); // e.g., "no matching customer documents found"
+  } else {
+    res.send(customers);
+  }
+});
+
 app.get("/customers/:id", async (req, res) => {
   const id = req.params.id;
   const [cust, err] = await da.getCustomerById(id);
