@@ -30,8 +30,28 @@ async function getCustomers() {
   }
 }
 
-
+async function getCustomerById(id) {
+  try {
+    const col = await connectDB();
+    // Ensure id is numeric, as stored in Mongo
+    const customer = await col.findOne({ id: Number(id) });
+    if (customer) {
+      return [customer, null];
+    } else {
+      return [null, 'Customer not found'];
+    }
+  } catch (err) {
+    console.log(err.message);
+    return [null, err.message];
+  }
+}
 
 module.exports = {
-  getCustomers
+  getCustomers,
+  getCustomerById // Add this here as well!
 };
+
+
+
+
+
