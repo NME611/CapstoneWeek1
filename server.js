@@ -56,6 +56,18 @@ app.post("/customers", async (req, res) => {
   }
 });
 
+app.get("/customers/:id", async (req, res) => {
+  const id = req.params.id;
+  const [customer, errMsg] = await da.getCustomerById(id);
+
+  if (customer === null) {
+    res.status(404).send(errMsg);
+  } else {
+    res.send(customer);
+  }
+});
+
+
 
 app.listen(PORT, () => {
     console.log(`Server is running at http://localhost:${PORT}`);

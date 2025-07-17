@@ -75,9 +75,25 @@ async function resetCustomers() {
   }
 }
 
+async function getCustomerById(id) {
+  try {
+    const col = await connectDB();
+    const customer = await col.findOne({ id: +id }); // "+" converts string to number
+    if (customer) {
+      return [customer, null];
+    } else {
+      return [null, "invalid customer number"];
+    }
+  } catch (err) {
+    return [null, err.message];
+  }
+}
 
 
-module.exports = { getCustomers, getCustomerById, addCustomer, resetCustomers };
+
+
+module.exports = { getCustomers, resetCustomers, addCustomer, getCustomerById };
+
 
 
 
