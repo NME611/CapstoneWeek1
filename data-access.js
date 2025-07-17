@@ -89,10 +89,30 @@ async function getCustomerById(id) {
   }
 }
 
+async function updateCustomer(updatedCustomer) {
+  try {
+    const col = await connectDB();
+    const filter = { id: updatedCustomer.id };
+    const update = { $set: updatedCustomer };
+    const result = await col.updateOne(filter, update);
+    if (result.matchedCount === 0) {
+      return [null, "no record found to update"];
+    }
+    if (result.modifiedCount === 1) {
+      return ["one record updated", null];
+    }
+    // No document was modified, but one matched - this means data was identical
+    return ["record already up to date", null];
+  } catch (err) {
+    return [null, err.message];
+  }
+}
 
 
 
-module.exports = { getCustomers, resetCustomers, addCustomer, getCustomerById };
+
+
+module.exports = { getCustomers, resetCustomers, addCustomer, getCustomerById, updateCustomer };
 
 
 
