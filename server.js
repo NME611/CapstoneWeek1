@@ -5,6 +5,21 @@ const PORT = 4000;
 const da = require("./data-access");
 const bodyParser = require('body-parser');
 
+// API Key middleware
+function apiKeyMiddleware(req, res, next) {
+  const apiKeyHeader = req.headers["x-api-key"];
+  const validApiKey = process.env.API_KEY;
+
+  if (!apiKeyHeader) {
+    res.status(401).send("API Key is missing");
+    return;
+  }
+  if (apiKeyHeader !== validApiKey) {
+    res.status(403).send("API Key is invalid");
+    return;
+  }
+  next();
+}
 
 
 // Serve static files from the 'public' directory
@@ -41,8 +56,18 @@ app.get("/reset", async (req, res) => {
   }
 });
 
+app.get("/customers", apiKeyMiddleware, async (req, res) => {
+  const [cust, err] = await da.getCustomers();
+  if (cust !== null) {
+    res.send(cust);
+  } else {
+    res.status(500).send(err);
+  }
+});
 
-app.post("/customers", async (req, res) => {
+
+
+app.post("/customers",apiKeyMiddleware, async (req, res) => {
   if (!req.body || Object.keys(req.body).length === 0) {
     res.status(400).send("missing request body");
     return;
@@ -67,7 +92,7 @@ app.get("/customers/:id", async (req, res) => {
   }
 });
 
-app.put("/customers/:id", async (req, res) => {
+app.put("/customers/:id", apiKeyMiddleware, async (req, res) => {
   const updatedCustomer = req.body;
   const id = req.params.id;
   if (!updatedCustomer) {
@@ -85,7 +110,7 @@ app.put("/customers/:id", async (req, res) => {
   }
 });
 
-app.delete("/customers/:id", async (req, res) => {
+app.delete("/customers/:id", apiKeyMiddleware, async (req, res) => {
   const id = req.params.id;
   const [message, errMsg] = await da.deleteCustomerById(id);
 
