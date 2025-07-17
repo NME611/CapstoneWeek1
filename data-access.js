@@ -46,10 +46,39 @@ async function getCustomerById(id) {
   }
 }
 
-module.exports = {
-  getCustomers,
-  getCustomerById // Add this here as well!
-};
+async function addCustomer(newCustomer) {
+  try {
+    const col = await connectDB();
+    const result = await col.insertOne(newCustomer);
+    // result.insertedId is the _id assigned by MongoDB
+    return ["success", result.insertedId, null];
+  } catch (err) {
+    console.log(err.message);
+    return ["fail", null, err.message];
+  }
+}
+
+async function resetCustomers() {
+  try {
+    const col = await connectDB();
+    // Delete all existing documents
+    await col.deleteMany({});
+    // Insert the default records
+    await col.insertMany([
+      { id: 0, name: "Mary Jackson", email: "maryj@abc.com", password: "maryj" },
+      { id: 1, name: "Karen Addams", email: "karena@abc.com", password: "karena" },
+      { id: 2, name: "Scott Ramsey", email: "scottr@abc.com", password: "scottr" }
+    ]);
+    return [ "success", null ];
+  } catch (err) {
+    return [ null, err.message ];
+  }
+}
+
+
+
+module.exports = { getCustomers, getCustomerById, addCustomer, resetCustomers };
+
 
 
 

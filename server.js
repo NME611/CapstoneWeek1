@@ -3,9 +3,12 @@ const path = require('path');
 const app = express();
 const PORT = 4000;
 const da = require("./data-access");
+const bodyParser = require('body-parser');
+
 
 
 // Serve static files from the 'public' directory
+app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 app.get("/customers", async (req, res) => {
   const [cust, err] = await da.getCustomers();
@@ -29,6 +32,29 @@ app.get("/customers/:id", async (req, res) => {
   }
 });
 
+app.get("/reset", async (req, res) => {
+  const [status, err] = await da.resetCustomers();
+  if (status === "success") {
+    res.send("Customer data has been reset.");
+  } else {
+    res.status(500).send(err);
+  }
+});
+
+
+app.post("/customers", async (req, res) => {
+  if (!req.body || Object.keys(req.body).length === 0) {
+    res.status(400).send("missing request body");
+    return;
+  }
+  const [status, id, err] = await da.addCustomer(req.body);
+  if (status === "success") {
+    req.body._id = id; // Attach the MongoDB _id to the object sent back
+    res.status(201).send(req.body);
+  } else {
+    res.status(400).send(err);
+  }
+});
 
 
 app.listen(PORT, () => {
