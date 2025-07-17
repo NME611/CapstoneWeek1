@@ -108,11 +108,34 @@ async function updateCustomer(updatedCustomer) {
   }
 }
 
+async function deleteCustomerById(id) {
+  try {
+    const col = await connectDB();
+    const result = await col.deleteOne({ id: +id }); // "+" converts id to number
+    if (result.deletedCount === 1) {
+      return ["one record deleted", null];
+    } else {
+      return [null, "no record deleted"];
+    }
+  } catch (err) {
+    return [null, err.message];
+  }
+}
 
 
 
 
-module.exports = { getCustomers, resetCustomers, addCustomer, getCustomerById, updateCustomer };
+
+
+module.exports = {
+  getCustomers,
+  resetCustomers,
+  addCustomer,
+  getCustomerById,
+  updateCustomer,
+  deleteCustomerById
+};
+
 
 
 
