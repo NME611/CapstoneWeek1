@@ -49,6 +49,10 @@ async function getCustomerById(id) {
 async function addCustomer(newCustomer) {
   try {
     const col = await connectDB();
+    const existing = await col.findOne({ $or: [ { id: newCustomer.id }, { email: newCustomer.email } ] });
+    if (existing) {
+      return ["fail", null, "A customer with that id or email already exists"];
+    }
     const result = await col.insertOne(newCustomer);
     // result.insertedId is the _id assigned by MongoDB
     return ["success", result.insertedId, null];
@@ -92,6 +96,16 @@ async function getCustomerById(id) {
 async function updateCustomer(updatedCustomer) {
   try {
     const col = await connectDB();
+    const existing = await col.findOne({
+      $and: [
+        { $or: [ { id: updatedCustomer.id }, { email: updatedCustomer.email } ] },
+        { id: { $ne: updatedCustomer.id } }
+      ]
+    });
+
+    if (existing) {
+      return [null, "Another customer with that id or email already exists"];
+    }
     const filter = { id: updatedCustomer.id };
     const update = { $set: updatedCustomer };
     const result = await col.updateOne(filter, update);

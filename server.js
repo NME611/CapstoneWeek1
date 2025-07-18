@@ -7,10 +7,16 @@ const bodyParser = require('body-parser');
 
 // API Key middleware
 function apiKeyMiddleware(req, res, next) {
-  const apiKeyHeader = req.headers["x-api-key"];
-  const validApiKey = process.env.API_KEY;
-
-  if (!apiKeyHeader) {
+const API_KEY = process.env.API_KEY || abcd;
+const apiKey = req.query.api_key || req.headers['x-api-key'];  
+  //const apiKeyHeader = req.headers["x-api-key"];
+  
+if (apiKey === API_KEY) {
+        next();
+    } else {
+        res.status(403).send('Forbidden: Invalid API Key');
+    }
+  /*if (!apiKeyHeader) {
     res.status(401).send("API Key is missing");
     return;
   }
@@ -18,23 +24,16 @@ function apiKeyMiddleware(req, res, next) {
     res.status(403).send("API Key is invalid");
     return;
   }
-  next();
+  next();*/
 }
 
 
 // Serve static files from the 'public' directory
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
-app.get("/customers", async (req, res) => {
-  const [cust, err] = await da.getCustomers();
-  if (cust !== null) {
-    res.send(cust);
-  } else {
-    res.status(500).send(err);
-  }
-});
 
-app.get("/customers/find", async (req, res) => {
+
+app.get("/customers/find", apiKeyMiddleware, async (req, res) => {
   // 2. If no query string, return error
   if (Object.keys(req.query).length === 0) {
     res.send("query string is required");
@@ -68,7 +67,7 @@ app.get("/customers/find", async (req, res) => {
   }
 });
 
-app.get("/customers/:id", async (req, res) => {
+app.get("/customers/:id", apiKeyMiddleware, async (req, res) => {
   const id = req.params.id;
   const [cust, err] = await da.getCustomerById(id);
 
@@ -81,7 +80,7 @@ app.get("/customers/:id", async (req, res) => {
   }
 });
 
-app.get("/reset", async (req, res) => {
+app.get("/reset", apiKeyMiddleware, async (req, res) => {
   const [status, err] = await da.resetCustomers();
   if (status === "success") {
     res.send("Customer data has been reset.");
@@ -98,7 +97,6 @@ app.get("/customers", apiKeyMiddleware, async (req, res) => {
     res.status(500).send(err);
   }
 });
-
 
 
 app.post("/customers",apiKeyMiddleware, async (req, res) => {
